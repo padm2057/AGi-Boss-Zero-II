@@ -287,8 +287,28 @@ export const initializeCoachingSession = (
       ]
     }));
 
-    // Use gemini-3-flash-preview for search grounding features as requested.
-    const modelName = 'gemini-3-flash-preview';
+    // --- MODEL SELECTION LOGIC ---
+    // Use gemini-3-flash-preview for fast/simple tasks
+    // Use gemini-3-pro-preview for complex reasoning/creative tasks
+    
+    let modelName = 'gemini-3-flash-preview'; // Default for Speed (Flash)
+
+    // List of frameworks that require higher reasoning capabilities (Pro)
+    const complexFrameworks = [
+        'direct_ai',        // "Direct AI (Pro)"
+        'smart_waterfall',  // Rigid planning
+        'sot_auditor',      // Deep analysis
+        'first_principles', // Deconstruction
+        'startup_lean',     // Strategic
+        'career_velocity',  // Strategic
+        'life_design'       // Deep personalization
+    ];
+
+    if (complexFrameworks.includes(framework.id)) {
+        modelName = 'gemini-3-pro-preview';
+    }
+
+    // console.log(`[Gemini Service] Initializing session with model: ${modelName} for framework: ${framework.id}`);
 
     chatInstance = ai.chats.create({
       model: modelName,
