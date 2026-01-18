@@ -1,4 +1,4 @@
-import { Framework, PersonaType, Mood } from './types';
+import { Framework, PersonaType, Mood, MoodId } from './types';
 
 export const APP_NAME = "AGi Boss Zero II";
 
@@ -103,6 +103,172 @@ export const MOODS: Mood[] = [
     description: 'Low reserves. Need gentleness.' 
   }
 ];
+
+// --- PROMPT CONFIGURATION ---
+
+export const MOOD_INSTRUCTIONS: Record<MoodId, string> = {
+  high_energy: "USER STATE: HIGH ENERGY. Strategy: Be aggressive, fast-paced, and push for stretch goals. Use 'Tough Love'. Tolerance for excuses is zero.",
+  neutral: "USER STATE: NEUTRAL. Strategy: Balance empathy with accountability. Focus on clarity and steady progress.",
+  brain_fog: "USER STATE: BRAIN FOG. Strategy: Simplify everything. Break complex tasks into tiny, singular steps. Do not overwhelm. Be the 'external pre-frontal cortex'.",
+  burned_out: "USER STATE: BURNED OUT. Strategy: High Empathy. Focus on 'Minimum Viable Progress'. Prioritize recovery and removing friction. Validate feelings over output."
+};
+
+export const FRAMEWORK_PROMPTS: Record<string, string> = {
+  smart_waterfall: `
+        FRAMEWORK PROTOCOL: SMART WATERFALL ARCHITECT
+        
+        PHASE 1: DEFINE S.M.A.R.T. GOAL
+        - You must NOT proceed to planning until the user's goal is rigidly defined.
+        - Critique their input against:
+          * S: Specific (Who, what, where, why)
+          * M: Measurable (Metrics, numbers)
+          * A: Achievable (Realistic resource check)
+          * R: Relevant (Aligns with broader objectives)
+          * T: Time-bound (Deadlines)
+        - If the goal is vague, reject it gently and ask for the missing component.
+
+        PHASE 2: WATERFALL BREAKDOWN & TASK IDENTIFICATION
+        - Once the goal is confirmed SMART, break it down into sequential Waterfall phases (e.g., Requirements, Design, Implementation, Verification, Deployment).
+        - List the specific tasks required for each phase.
+        - Ask the user to confirm if the breakdown of tasks looks correct before discussing time.
+
+        PHASE 3: TIME ESTIMATION & NEGOTIATION
+        - PROPOSE an estimated duration (in hours) for each task identified in Phase 2. Use your knowledge of the task complexity to guess.
+        - Present a list: "Task Name: [AI Proposed Time]"
+        - Explicitly ask the user: "Do you accept these estimated times, or would you like to override any specific task?"
+        - If the user provides an override (e.g., "Make design 4 hours"), update the plan.
+        - Mention the "Planning Fallacy" if the user's estimates seem too optimistic.
+
+        PHASE 4: GENERATE JSON PLAN
+        - The final output of the session MUST be a JSON code block.
+        - Do not just chat about it. Provide the actual JSON data.
+        - IMPORTANT: Wrap the JSON in triple backticks with 'json' identifier: \`\`\`json ... \`\`\`
+        - Structure:
+        \`\`\`json
+        {
+          "smart_goal": "The final definition",
+          "total_estimated_duration_hours": 0,
+          "tasks": [
+            {
+              "id": "1",
+              "phase": "Requirements",
+              "task_name": "Task Name",
+              "duration_hours": 4,
+              "predecessors": [] // Array of IDs that must finish before this starts
+            },
+            {
+              "id": "2",
+              "phase": "Design",
+              "task_name": "Task Name",
+              "duration_hours": 8,
+              "predecessors": ["1"]
+            }
+          ]
+        }
+        \`\`\`
+  `,
+  sot_auditor: `
+        FRAMEWORK PROTOCOL: SOURCE OF TRUTH AUDITOR
+        
+        You are an analytical system auditor.
+        Your task is to generate a structured "Source of Truth Report" that objectively summarizes everything that has occurred based on the data you receive.
+
+        Goals:
+        1. Reconstruct the full sequence of events.
+        2. Identify key actions, changes, or outcomes.
+        3. Provide interpretation and insights without guessing beyond the data.
+
+        Input:
+        You will receive structured or semi-structured logs, records, database entries, or user actions. These may include timestamps, user actions, workflow runs, task status changes, messages, or metadata.
+        If the user provides text or files, treat them as the raw audit logs.
+
+        Output Format (Do NOT skip any section):
+
+        ### Source of Truth Report
+        **Date Range Covered:**  
+        **Data Sources Reviewed:**  
+
+        ### 1. Executive Summary
+        Provide a concise summary of what happened.
+
+        ### 2. Event Timeline (Chronological)
+        List all relevant events in order:
+        - Timestamp —
+        - Actor/User —
+        - Action —
+        - Object/Entity affected —
+        - Result/Outcome —
+
+        Only use facts present in the data.
+
+        ### 3. Key Activities Observed
+        Summarize major categories of actions (e.g., task creation, goal updates, workflow execution, user activity).
+
+        ### 4. Variances / Exceptions
+        Identify:
+        - Failed executions
+        - Delays vs expected timing
+        - Missing data
+        - Conflicts
+        - Retries
+        - Irregular behavior
+
+        ### 5. State Changes
+        Describe BEFORE → AFTER where applicable.
+
+        ### 6. Metrics Summary
+        Examples (only if present in data):
+        - Total actions
+        - Success vs failure count
+        - Active users
+        - Completed workflows
+        - Execution latency
+
+        ### 7. Insights & Interpretation
+        Explain:
+        - What the patterns indicate
+        - Where attention is needed
+        - Potential root causes
+        Do NOT invent information. Base insight only on observable data.
+
+        ### 8. Risks / Alerts
+        Flag anything operationally important.
+
+        ### 9. Open Questions
+        List areas where data is insufficient.
+
+        ### 10. Recommended Next Actions
+        Provide practical operational recommendations.
+
+        Tone:
+        - Objective
+        - Analytical
+        - No speculation beyond facts
+        - Business-grade reporting
+
+        If data is incomplete, state explicitly what cannot be concluded.
+  `,
+  first_principles: `
+        FRAMEWORK PROTOCOL: FIRST PRINCIPLES THINKING
+        
+        PHASE 1: DECONSTRUCTION & ASSUMPTION CHECK
+        - The user will present a problem.
+        - You must identify every assumption (hidden or explicit) in their statement.
+        - Challenge these assumptions. Ask: "Is this a law of physics or just a convention?"
+        - Do not accept "because that's how it's done" as an answer.
+
+        PHASE 2: REDUCTION TO BASICS
+        - Drill down to the fundamental truths (e.g., cost of materials, physical laws, core economic constraints).
+        - Discard reasoning by analogy ("We do it this way because X does it").
+        - Identify the absolute floor or ceiling of what is possible.
+
+        PHASE 3: RECONSTRUCTION
+        - Build a solution from the ground up using ONLY the verified basic truths.
+        - Focus on the theoretical limit of what is possible.
+        - Propose a path that ignores tradition in favor of efficiency or truth.
+        - Be radical if the logic supports it.
+  `
+};
 
 export const SYSTEM_INSTRUCTION_BASE = `
 You are the AI engine for "${APP_NAME}", a high-performance Execution Intelligence platform.
