@@ -8,8 +8,9 @@ let chatInstance: Chat | null = null;
 
 const getApiKey = (): string | undefined => {
   // Check process.env first (Standard/System Preference)
-  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-    return process.env.API_KEY;
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env.API_KEY) return process.env.API_KEY;
+    if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
   }
   
   // Check Vite specific env vars (Client-side fallback)
@@ -17,7 +18,11 @@ const getApiKey = (): string | undefined => {
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env) {
        // @ts-ignore
+       if (import.meta.env.VITE_GEMINI_API_KEY) return import.meta.env.VITE_GEMINI_API_KEY;
+       // @ts-ignore
        if (import.meta.env.VITE_API_KEY) return import.meta.env.VITE_API_KEY;
+       // @ts-ignore
+       if (import.meta.env.GEMINI_API_KEY) return import.meta.env.GEMINI_API_KEY;
        // @ts-ignore
        if (import.meta.env.API_KEY) return import.meta.env.API_KEY;
     }
@@ -117,35 +122,14 @@ export const initializeCoachingSession = (
       ]
     }));
 
-    // --- MODEL SELECTION LOGIC ---
-    // Use gemini-3-flash-preview for fast/simple tasks
-    // Use gemini-3-pro-preview for complex reasoning/creative tasks
-    
-    let modelName = 'gemini-3-flash-preview'; // Default for Speed (Flash)
-
-    // List of frameworks that require higher reasoning capabilities (Pro)
-    const complexFrameworks = [
-        'direct_ai',        // "Direct AI (Pro)"
-        'smart_waterfall',  // Rigid planning
-        'sot_auditor',      // Deep analysis
-        'first_principles', // Deconstruction
-        'startup_lean',     // Strategic
-        'career_velocity',  // Strategic
-        'life_design'       // Deep personalization
-    ];
-
-    if (complexFrameworks.includes(framework.id)) {
-        modelName = 'gemini-3-pro-preview';
-    }
-
-    // console.log(`[Gemini Service] Initializing session with model: ${modelName} for framework: ${framework.id}`);
+    // Model selection: gemini-3.8-flash is the standard reliable model for conversational AI & coaching
+    const modelName = 'gemini-3.8-flash';
 
     chatInstance = ai.chats.create({
       model: modelName,
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.7,
-        tools: [{ googleSearch: {} }], // ENABLE GOOGLE SEARCH GROUNDING
       },
       history: history
     });
@@ -337,7 +321,7 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
     const base64Data = await base64Promise;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.5-transcribe',
       contents: {
         parts: [
           { 
@@ -474,7 +458,7 @@ export const playText = async (
     
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-tts',
+        model: 'gemini-3.1-flash-tts-preview',
         contents: { parts: [{ text }] },
         config: {
             responseModalities: [Modality.AUDIO],

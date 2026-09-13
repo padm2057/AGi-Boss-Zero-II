@@ -321,7 +321,7 @@ const App: React.FC = () => {
                 const msgs = [...prev.messages];
                 if (msgs.length === 0) {
                   msgs.push({
-                    id: 'init-ai',
+                    id: generateId(),
                     role: 'model',
                     text: text,
                     timestamp: new Date()
@@ -346,7 +346,7 @@ const App: React.FC = () => {
           ...prev, 
           isLoading: false, 
           messages: [...prev.messages, {
-            id: 'error-init',
+            id: generateId(),
             role: 'model',
             text: errorText,
             timestamp: new Date()
@@ -1110,7 +1110,7 @@ const App: React.FC = () => {
       });
     } catch (error: any) {
       const errorText = error.message || "Connection interruption.";
-      setSession(prev => ({ ...prev, messages: [...prev.messages, { id: 'error', role: 'model', text: errorText, timestamp: new Date() }] }));
+      setSession(prev => ({ ...prev, messages: [...prev.messages, { id: generateId(), role: 'model', text: errorText, timestamp: new Date() }] }));
     } finally { setSession(prev => ({ ...prev, isLoading: false })); }
   };
 
@@ -1572,9 +1572,9 @@ const App: React.FC = () => {
 
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-2 relative transition-all">
-              {session.messages.map((msg) => (
+              {session.messages.map((msg, index) => (
                 <ChatBubble 
-                  key={msg.id} 
+                  key={msg.id ? `${msg.id}-${index}` : `msg-${index}`} 
                   message={msg} 
                   fontSize={fontSize} 
                   onImageClick={setViewingImage}
